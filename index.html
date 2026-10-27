@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEase - Premium Modern Shopping Experience</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for crisp UI Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617',
+                        },
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            200: '#c7d2fe',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        accent: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'glow': '0 0 25px -5px rgba(99, 102, 241, 0.35)',
+                        'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01)',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body class="text-slate-800 antialiased selection:bg-brand-500 selection:text-white pb-12 min-h-screen">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none"></div>
+
+    <!-- Announcement Topbar -->
+    <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white text-xs py-2 px-4 sm:px-12 border-b border-white/10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <p class="hidden sm:flex items-center gap-2 text-slate-300">
+                <span class="flex h-2 w-2 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                <span>Express Shipping on orders over ₹99! Code: <span class="text-indigo-300 font-bold tracking-wide px-1.5 py-0.5 rounded bg-white/10 border border-white/10">EASE20</span> for 20% off</span>
+            </p>
+            <p class="sm:hidden text-center w-full text-[11px] font-medium">
+                🎉 Free Shipping over ₹99! Use Code: <span class="text-indigo-300 font-bold">EASE20</span>
+            </p>
+            <div class="hidden sm:flex items-center space-x-6 text-slate-300 font-medium">
+                <span class="hover:text-white cursor-pointer transition-colors flex items-center gap-1.5"><i class="fa-solid fa-headset text-indigo-400"></i> Support 24/7</span>
+                <span class="hover:text-white cursor-pointer transition-colors flex items-center gap-1.5"><i class="fa-solid fa-globe text-indigo-400"></i> INR (₹)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Navigation Header -->
+    <header class="sticky top-0 z-40 glass-header border-b border-slate-200/80 transition-all duration-300 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20 gap-4">
+                
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-3 flex-shrink-0 group">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/25 group-hover:scale-105 group-hover:shadow-glow transition-all duration-300">
+                        <i class="fa-solid fa-bag-shopping text-xl"></i>
+                    </div>
+                    <span class="text-2xl font-extrabold tracking-tight text-slate-900">Shop<span class="bg-gradient-to-r from-brand-600 to-violet-600 bg-clip-text text-transparent">Ease</span></span>
+                </a>
+
+                <!-- Search Bar with Dynamic Autocomplete -->
+                <div class="relative flex-1 max-w-2xl hidden md:block">
+                    <div class="relative group">
+                        <input type="text" id="search-input" placeholder="Search premium tech, apparel, home goods..." 
+                            class="w-full pl-11 pr-10 py-3 bg-slate-100/90 border border-slate-200/80 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white focus:border-transparent transition-all shadow-inner">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 group-focus-within:text-brand-600 transition-colors"></i>
+                        <button id="clear-search" class="hidden absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 text-sm transition-colors">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                        </button>
+                    </div>
+                    <!-- Autocomplete Suggestions Dropdown -->
+                    <div id="search-suggestions" class="hidden absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 divide-y divide-slate-100/80 max-h-96 overflow-y-auto"></div>
+                </div>
+
+                <!-- Navigation Actions -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <!-- Wishlist Button -->
+                    <button id="btn-open-wishlist" class="relative p-3 text-slate-700 hover:text-rose-500 hover:bg-slate-100/80 rounded-2xl transition-all" title="Wishlist">
+                        <i class="fa-regular fa-heart text-xl"></i>
+                        <span id="wishlist-badge" class="hidden absolute top-1.5 right-1.5 bg-rose-500 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</span>
+                    </button>
+
+                    <!-- Cart Button -->
+                    <button id="btn-open-cart" class="relative p-3 text-slate-700 hover:text-brand-600 hover:bg-slate-100/80 rounded-2xl transition-all" title="Shopping Cart">
+                        <i class="fa-solid fa-cart-shopping text-xl"></i>
+                        <span id="cart-badge" class="hidden absolute top-1.5 right-1.5 bg-brand-600 text-white text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-sm">0</span>
+                    </button>
+
+                    <!-- Account / Profile Dropdown -->
+                    <div class="relative pl-1 border-l border-slate-200">
+                        <button id="btn-user-menu" class="flex items-center space-x-2.5 p-1 rounded-2xl hover:bg-slate-100/80 transition-colors">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120" alt="User avatar" class="w-9 h-9 rounded-xl object-cover ring-2 ring-brand-500/30">
+                            <i class="fa-solid fa-chevron-down text-xs text-slate-400 hidden sm:block"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Mobile Search Bar -->
+            <div class="pb-4 md:hidden">
+                <div class="relative">
+                    <input type="text" id="mobile-search-input" placeholder="Search items..." 
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+
+        <!-- Hero Promotional Carousel/Banner -->
+        <section class="relative rounded-3xl overflow-hidden shadow-2xl mb-12 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white min-h-[380px] flex items-center border border-slate-800">
+            <div class="absolute -right-20 -top-20 w-96 h-96 bg-brand-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-violet-500/15 rounded-full blur-3xl pointer-events-none"></div>
+            
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 items-center p-8 sm:p-12 lg:p-14 gap-8 w-full">
+                <div class="space-y-5 max-w-xl">
+                    <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/15 border border-brand-400/30 text-brand-300 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+                        <i class="fa-solid fa-sparkles text-amber-400"></i> Spring Collection 2026
+                    </span>
+                    <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                        Elevate Your Everyday Lifestyle.
+                    </h1>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed font-normal">
+                        Discover curated tech accessories, sleek lifestyle gear, and luxury apparel with up to 40% discount today.
+                    </p>
+                    <div class="pt-3 flex flex-wrap gap-3.5">
+                        <a href="#product-grid-section" class="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-brand-600/30 hover:shadow-glow transition-all flex items-center gap-2.5 group">
+                            Explore Catalog <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                        <button onclick="filterByTag('Discount')" class="px-7 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-semibold text-sm backdrop-blur-md border border-white/10 transition-all">
+                            View Hot Deals
+                        </button>
+                    </div>
+                </div>
+                <div class="hidden md:flex justify-end relative">
+                    <div class="relative w-72 h-72 lg:w-80 lg:h-80 rounded-3xl overflow-hidden shadow-2xl border border-white/15 rotate-2 hover:rotate-0 transition-all duration-500 group">
+                        <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=800" alt="Featured Product" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 right-4 p-4 bg-slate-900/80 backdrop-blur-md rounded-2xl border border-white/10 flex justify-between items-center shadow-lg">
+                            <div>
+                                <p class="text-[10px] uppercase font-bold text-brand-400 tracking-wider">Spotlight Item</p>
+                                <p class="text-sm font-bold text-white truncate max-w-[170px]">Studio Wireless Pro</p>
+                            </div>
+                            <span class="text-amber-400 font-extrabold text-sm px-2.5 py-1 bg-amber-400/10 rounded-lg border border-amber-400/20">₹249.99</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Trust Badges -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center flex-shrink-0 text-xl shadow-inner">
+                    <i class="fa-solid fa-truck-fast"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-900">Free Express Shipping</h4>
+                    <p class="text-[11px] text-slate-500 font-medium">On all orders over ₹99</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 text-xl shadow-inner">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-900">Secure Payments</h4>
+                    <p class="text-[11px] text-slate-500 font-medium">256-Bit SSL Encrypted</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0 text-xl shadow-inner">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-900">30-Day Guarantee</h4>
+                    <p class="text-[11px] text-slate-500 font-medium">Hassle-free return policy</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-slate-300 transition-colors flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center flex-shrink-0 text-xl shadow-inner">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-900">24/7 Support</h4>
+                    <p class="text-[11px] text-slate-500 font-medium">Live chat & instant help</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main E-Commerce Section (Filters + Products) -->
+        <div id="product-grid-section" class="flex flex-col lg:flex-row gap-8">
+
+            <!-- Sidebar Filters -->
+            <aside class="w-full lg:w-64 flex-shrink-0 space-y-6">
+                <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-6 sticky top-28">
+                    
+                    <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                        <h3 class="font-extrabold text-slate-900 flex items-center gap-2.5 text-base">
+                            <i class="fa-solid fa-sliders text-brand-600"></i> Refine Results
+                        </h3>
+                        <button id="reset-filters" class="text-xs font-bold text-brand-600 hover:text-brand-700 transition-colors">Reset All</button>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div>
+                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">Categories</h4>
+                        <div id="category-filter-list" class="space-y-1.5">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="pt-5 border-t border-slate-100">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Max Price</h4>
+                            <span id="price-range-value" class="text-sm font-extrabold text-slate-900 px-2 py-0.5 bg-slate-100 rounded-lg">₹1,000</span>
+                        </div>
+                        <input type="range" id="price-slider" min="10" max="1000" step="10" value="1000" class="w-full accent-brand-600 cursor-pointer h-1.5 bg-slate-200 rounded-lg">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-400 mt-2">
+                            <span>₹10</span>
+                            <span>₹1,000</span>
+                        </div>
+                    </div>
+
+                    <!-- Rating Filter -->
+                    <div class="pt-5 border-t border-slate-100">
+                        <h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">Minimum Rating</h4>
+                        <div class="space-y-2" id="rating-filter-list">
+                            <label class="flex items-center space-x-2.5 text-xs text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
+                                <input type="radio" name="rating-filter" value="0" checked class="text-brand-600 focus:ring-brand-500">
+                                <span class="font-medium">All Ratings</span>
+                            </label>
+                            <label class="flex items-center space-x-2.5 text-xs text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
+                                <input type="radio" name="rating-filter" value="4" class="text-brand-600 focus:ring-brand-500">
+                                <span class="flex items-center text-amber-500 font-semibold"><i class="fa-solid fa-star text-xs mr-1.5"></i>4.0 & above</span>
+                            </label>
+                            <label class="flex items-center space-x-2.5 text-xs text-slate-600 cursor-pointer hover:text-slate-900 transition-colors">
+                                <input type="radio" name="rating-filter" value="4.5" class="text-brand-600 focus:ring-brand-500">
+                                <span class="flex items-center text-amber-500 font-semibold"><i class="fa-solid fa-star text-xs mr-1.5"></i>4.5 & above</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Availability Filter -->
+                    <div class="pt-5 border-t border-slate-100">
+                        <label class="flex items-center space-x-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
+                            <input type="checkbox" id="in-stock-only" class="rounded-md text-brand-600 focus:ring-brand-500 h-4 w-4">
+                            <span>In Stock Only</span>
+                        </label>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- Product Grid Area -->
+            <div class="flex-1 space-y-6">
+                
+                <!-- Controls Header: Result Count & Sorting -->
+                <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <p class="text-xs sm:text-sm font-medium text-slate-500">
+                        Showing <span id="product-count" class="font-extrabold text-slate-900">0</span> items in catalog
+                    </p>
+                    <div class="flex items-center space-x-3 w-full sm:w-auto">
+                        <label for="sort-select" class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Sort By:</label>
+                        <select id="sort-select" class="w-full sm:w-auto bg-slate-50 border border-slate-200/80 text-slate-800 text-xs font-bold rounded-xl py-2.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer">
+                            <option value="featured">Featured</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="rating">Highest Rated</option>
+                            <option value="newest">Newest Arrivals</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Products Display Grid -->
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Dynamic Product Cards populated by JavaScript -->
+                </div>
+
+                <!-- Empty State View -->
+                <div id="no-products-view" class="hidden text-center py-20 bg-white rounded-3xl border border-slate-200/80 p-8 space-y-4">
+                    <div class="w-20 h-20 bg-slate-100 text-slate-400 rounded-3xl flex items-center justify-center mx-auto text-3xl">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <h3 class="text-xl font-extrabold text-slate-900">No matching products found</h3>
+                    <p class="text-slate-500 text-xs sm:text-sm max-w-md mx-auto">Try adjusting your active filters, clearing your search query, or lowering the price limit.</p>
+                    <button onclick="resetAllFilters()" class="px-6 py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl text-xs shadow-md shadow-brand-600/20 transition-all">
+                        Reset All Filters
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Shopping Cart Drawer Modal -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 overflow-hidden hidden" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" id="cart-backdrop"></div>
+        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+            <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col border-l border-slate-100">
+                <!-- Cart Header -->
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                        </div>
+                        <h2 class="text-base font-extrabold text-slate-900">Shopping Cart (<span id="cart-drawer-count">0</span>)</h2>
+                    </div>
+                    <button id="btn-close-cart" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Cart Items Container -->
+                <div id="cart-items-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <!-- Dynamic Cart Items -->
+                </div>
+
+                <!-- Cart Summary & Footer -->
+                <div id="cart-summary-footer" class="p-6 border-t border-slate-100 bg-slate-50/80 space-y-4">
+                    
+                    <!-- Coupon Input -->
+                    <div class="flex gap-2">
+                        <input type="text" id="coupon-code-input" placeholder="Promo code (e.g. EASE20)" class="uppercase flex-1 bg-white border border-slate-200/90 text-xs font-bold rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button id="btn-apply-coupon" class="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-colors shadow-sm">Apply</button>
+                    </div>
+
+                    <!-- Costs Breakdown -->
+                    <div class="space-y-2 text-xs text-slate-600 font-medium">
+                        <div class="flex justify-between">
+                            <span>Subtotal</span>
+                            <span id="cart-subtotal" class="font-extrabold text-slate-900">₹0.00</span>
+                        </div>
+                        <div id="discount-row" class="hidden flex justify-between text-emerald-600 font-semibold">
+                            <span>Promo Discount (20%)</span>
+                            <span id="cart-discount" class="font-extrabold">-₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Estimated Tax (8%)</span>
+                            <span id="cart-tax" class="font-extrabold text-slate-900">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Shipping</span>
+                            <span id="cart-shipping" class="font-extrabold text-emerald-600">FREE</span>
+                        </div>
+                        <div class="flex justify-between text-base font-black text-slate-900 pt-3 border-t border-slate-200">
+                            <span>Total</span>
+                            <span id="cart-total" class="text-brand-600">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <button id="btn-proceed-checkout" class="w-full py-4 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-extrabold rounded-2xl shadow-lg shadow-brand-600/25 transition-all text-sm flex items-center justify-center gap-2">
+                        Proceed to Checkout <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Drawer Modal -->
+    <div id="wishlist-drawer" class="fixed inset-0 z-50 overflow-hidden hidden" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" id="wishlist-backdrop"></div>
+        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+            <div class="w-screen max-w-md bg-white shadow-2xl flex flex-col border-l border-slate-100">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-base">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <h2 class="text-base font-extrabold text-slate-900">Saved Wishlist</h2>
+                    </div>
+                    <button id="btn-close-wishlist" class="p-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
+                        <i class="fa-solid fa-xmark text-lg"></i>
+                    </button>
+                </div>
+                <div id="wishlist-items-container" class="flex-1 overflow-y-auto p-6 space-y-4">
+                    <!-- Dynamic Wishlist Items -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick View Product Modal -->
+    <div id="quick-view-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-md" id="qv-backdrop"></div>
+        <div class="relative bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-slate-100 z-10 max-h-[90vh] overflow-y-auto">
+            <button id="btn-close-qv" class="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 hover:bg-white text-slate-700 rounded-2xl flex items-center justify-center transition-colors shadow-md">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div id="qv-content" class="grid grid-cols-1 md:grid-cols-2">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal Workflow -->
+    <div id="checkout-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="fixed inset-0 bg-slate-950/60 backdrop-blur-md" id="checkout-backdrop"></div>
+        <div class="relative bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-100 z-10 p-6 sm:p-8 max-h-[90vh] overflow-y-auto">
+            
+            <button id="btn-close-checkout" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 p-2 rounded-xl">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <!-- Multi-step Progress Bar Indicator -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between max-w-xs mx-auto mb-6">
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-brand-600 text-white font-bold text-xs flex items-center justify-center shadow-md">1</div>
+                        <span class="text-[10px] font-bold text-brand-600 mt-1 uppercase">Shipping</span>
+                    </div>
+                    <div class="flex-1 h-0.5 bg-slate-200 mx-2"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold text-xs flex items-center justify-center border border-slate-200">2</div>
+                        <span class="text-[10px] font-bold text-slate-400 mt-1 uppercase">Payment</span>
+                    </div>
+                    <div class="flex-1 h-0.5 bg-slate-200 mx-2"></div>
+                    <div class="flex flex-col items-center">
+                        <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold text-xs flex items-center justify-center border border-slate-200">3</div>
+                        <span class="text-[10px] font-bold text-slate-400 mt-1 uppercase">Done</span>
+                    </div>
+                </div>
+                <h2 class="text-2xl font-black text-slate-900 text-center">Express Checkout</h2>
+                <p class="text-xs text-slate-500 text-center mt-1">Complete your purchase safely with 256-Bit SSL encryption.</p>
+            </div>
+
+            <form id="checkout-form" onsubmit="event.preventDefault(); processCheckout();" class="space-y-6">
+                <!-- Shipping Details -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider text-brand-600 flex items-center gap-2">
+                        <i class="fa-solid fa-truck text-xs"></i> 1. Shipping Address
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <input type="text" required placeholder="First Name" class="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        <input type="text" required placeholder="Last Name" class="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                    </div>
+                    <input type="email" required placeholder="Email Address for receipt" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                    <input type="text" required placeholder="Street Address" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
+                        <input type="text" required placeholder="City" class="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        <input type="text" required placeholder="State / Province" class="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        <input type="text" required placeholder="Zip Code" class="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                    </div>
+                </div>
+
+                <!-- Payment Selection -->
+                <div class="space-y-4 pt-5 border-t border-slate-100">
+                    <h3 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider text-brand-600 flex items-center gap-2">
+                        <i class="fa-solid fa-credit-card text-xs"></i> 2. Payment Method
+                    </h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <label class="border border-slate-200/80 rounded-2xl p-3.5 flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 transition-all has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50/50 has-[:checked]:shadow-sm">
+                            <input type="radio" name="payment-method" value="card" checked class="sr-only">
+                            <i class="fa-solid fa-credit-card text-slate-700 text-lg mb-1"></i>
+                            <span class="text-[11px] font-bold text-slate-800">Credit Card</span>
+                        </label>
+                        <label class="border border-slate-200/80 rounded-2xl p-3.5 flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 transition-all has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50/50 has-[:checked]:shadow-sm">
+                            <input type="radio" name="payment-method" value="paypal" class="sr-only">
+                            <i class="fa-brands fa-paypal text-sky-600 text-lg mb-1"></i>
+                            <span class="text-[11px] font-bold text-slate-800">PayPal</span>
+                        </label>
+                        <label class="border border-slate-200/80 rounded-2xl p-3.5 flex flex-col items-center justify-center cursor-pointer hover:border-brand-500 transition-all has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50/50 has-[:checked]:shadow-sm">
+                            <input type="radio" name="payment-method" value="apple" class="sr-only">
+                            <i class="fa-brands fa-apple text-slate-900 text-lg mb-1"></i>
+                            <span class="text-[11px] font-bold text-slate-800">Apple Pay</span>
+                        </label>
+                    </div>
+
+                    <!-- Demo Card Inputs -->
+                    <div class="space-y-3.5 pt-2">
+                        <input type="text" required placeholder="Card Number (4242 ...)" value="4242 4242 4242 4242" class="w-full bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        <div class="grid grid-cols-2 gap-3.5">
+                            <input type="text" required placeholder="MM/YY" value="12/28" class="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                            <input type="password" required placeholder="CVC" value="123" class="bg-slate-50 border border-slate-200/80 rounded-2xl px-4 py-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-5 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">Total Amount:</span>
+                        <span id="checkout-final-amount" class="text-2xl font-black text-brand-600">₹0.00</span>
+                    </div>
+                    <button type="submit" id="btn-complete-order" class="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-2xl shadow-lg shadow-emerald-600/30 transition-all text-xs sm:text-sm flex items-center gap-2">
+                        Complete Purchase <i class="fa-solid fa-lock text-xs"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Success Confirmation Modal -->
+    <div id="order-success-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-md"></div>
+        <div class="relative bg-white rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-slate-100 z-10 p-8 text-center space-y-6">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto text-3xl animate-bounce shadow-inner">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <h2 class="text-2xl font-black text-slate-900">Order Confirmed!</h2>
+                <p class="text-xs text-slate-500 mt-1.5 font-medium">Thank you for shopping with ShopEase. We've sent an order receipt to your email.</p>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-left text-xs space-y-2.5">
+                <div class="flex justify-between">
+                    <span class="text-slate-500 font-medium">Order Number:</span>
+                    <span id="success-order-id" class="font-mono font-bold text-slate-900">#SE-89420</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500 font-medium">Estimated Delivery:</span>
+                    <span class="font-bold text-slate-900">3 - 5 Business Days</span>
+                </div>
+            </div>
+            <button onclick="closeSuccessModal()" class="w-full py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold rounded-2xl text-xs shadow-md shadow-brand-600/20 transition-all">
+                Continue Shopping
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script src="script.js"></script>
+
+</body>
+</html>
